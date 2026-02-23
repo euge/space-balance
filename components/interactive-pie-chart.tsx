@@ -155,46 +155,43 @@ export default function InteractivePieChart() {
                   className="transition-all duration-300 ease-out"
                 />
                 {(() => {
+                  const midAngle = (arc.startAngle + arc.endAngle) / 2
                   const isSmall = percentage < 15
-                  const fontSize = isSmall ? Math.max(7, Math.round(percentage * 0.8 + 1)) : 13
-                  const words = arc.name.split(" ")
-                  const nameLineCount = isSmall ? words.length : 1
-                  const lineHeight = isSmall ? fontSize + 3 : 18
-                  const totalLines = nameLineCount + 1 // +1 for percentage
-                  const startY = labelPos.y - ((totalLines - 1) * lineHeight) / 2
+
+                  if (isSmall) {
+                    // Rotate text along the radial direction to fit in narrow slices
+                    let rotation = midAngle - 90
+                    rotation = ((rotation % 360) + 360) % 360
+                    if (rotation > 90 && rotation < 270) {
+                      rotation += 180
+                    }
+                    rotation = rotation % 360
+                    if (rotation > 180) rotation -= 360
+
+                    return (
+                      <text
+                        x={labelPos.x}
+                        y={labelPos.y}
+                        textAnchor="middle"
+                        dominantBaseline="middle"
+                        className="fill-foreground font-medium text-sm"
+                        transform={`rotate(${rotation}, ${labelPos.x}, ${labelPos.y})`}
+                      >
+                        {arc.name}
+                      </text>
+                    )
+                  }
 
                   return (
-                    <>
-                      <text
-                        x={labelPos.x}
-                        textAnchor="middle"
-                        dominantBaseline="middle"
-                        className="fill-foreground text-xs font-medium"
-                        style={{ fontSize: `${fontSize}px` }}
-                      >
-                        {isSmall ? (
-                          words.map((word, wi) => (
-                            <tspan key={wi} x={labelPos.x} y={startY + wi * lineHeight}>
-                              {word}
-                            </tspan>
-                          ))
-                        ) : (
-                          <tspan x={labelPos.x} y={startY}>
-                            {arc.name}
-                          </tspan>
-                        )}
-                      </text>
-                      <text
-                        x={labelPos.x}
-                        y={startY + nameLineCount * lineHeight}
-                        textAnchor="middle"
-                        dominantBaseline="middle"
-                        className="fill-foreground text-xs"
-                        style={{ fontSize: `${fontSize}px` }}
-                      >
-                        {percentage}%
-                      </text>
-                    </>
+                    <text
+                      x={labelPos.x}
+                      y={labelPos.y}
+                      textAnchor="middle"
+                      dominantBaseline="middle"
+                      className="fill-foreground text-sm font-medium"
+                    >
+                      {arc.name}
+                    </text>
                   )
                 })()}
               </g>
